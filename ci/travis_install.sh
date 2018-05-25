@@ -18,19 +18,31 @@ if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" != "master" ]
         echo "Skipping 'all' configuration"
         exit 0
     fi
+    if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        echo "Skipping MacOSX build"
+        exit 0
+    fi
 fi
 
-pip install six
-pip install cython;
+PIP_INSTALL="python -m pip install --upgrade"
+if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+    # On OSX we need to upgrade pip as the image version is too old ...
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python
+    PIP_INSTALL="python -m pip install --user --upgrade"
+fi
+
+$PIP_INSTALL configparser
+$PIP_INSTALL six
+$PIP_INSTALL cython;
 
 if [ "${PYSMT_SOLVER}" == "all" ] || [ "${PYSMT_SOLVER}" == "btor" ];
 then
-    pip install python-coveralls;
+    $PIP_INSTALL python-coveralls;
 fi
 
 if [ "${PYSMT_GMPY}" == "TRUE" ];
 then
-    pip install gmpy2;
+    $PIP_INSTALL gmpy2;
 fi
 
 # Adding Python 3.6 library path to GCC search
@@ -60,4 +72,10 @@ then
     python install.py --msat --conf --force;
     cp -v $(find ~/.smt_solvers/ -name mathsat -type f) pysmt/test/smtlib/bin/mathsat;
     mv pysmt/test/smtlib/bin/mathsat.solver.sh.template pysmt/test/smtlib/bin/mathsat.solver.sh ;
+fi
+
+
+# On OSX install nosetest
+if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+    $PIP_INSTALL nose
 fi
