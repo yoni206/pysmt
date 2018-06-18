@@ -55,7 +55,7 @@ fi
 #
 # Install Solvers
 #
-export BINDINGS_FOLDER=${HOME}/python_bindings/${PYSMT_SOLVER}
+export BINDINGS_FOLDER=${HOME}/python_bindings/${PYSMT_SOLVER}_${TRAVIS_OS_NAME}
 mkdir -p ${BINDINGS_FOLDER}
 python install.py --confirm-agreement --bindings-path ${BINDINGS_FOLDER}
 eval `python install.py --env --bindings-path ${BINDINGS_FOLDER}`
