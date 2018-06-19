@@ -27,7 +27,10 @@ if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" != "master" ]
     fi
 fi
 
-export BINDINGS_FOLDER=${HOME}/python_bindings/${PYSMT_SOLVER}_${TRAVIS_OS_NAME}
+PYSMT_SOLVER_FOLDER="${PYSMT_SOLVER}_${TRAVIS_OS_NAME}"
+PYSMT_SOLVER_FOLDER="${PYSMT_SOLVER_FOLDER//,/$'_'}"
+export BINDINGS_FOLDER=${HOME}/python_bindings/${PYSMT_SOLVER_FOLDER}
+
 eval `python install.py --env --bindings-path ${BINDINGS_FOLDER}`
 echo ${PYTHONPATH}
 python install.py --check
