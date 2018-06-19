@@ -34,9 +34,14 @@ if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     brew_install_or_upgrade readline
     brew_install_or_upgrade swig
     brew_install_or_upgrade gperf
+
+    brew_install_or_upgrade mpfr
+    brew_install_or_upgrade libmpc
     brew_install_or_upgrade gmp
+
     brew_install_or_upgrade pyenv
     brew_install_or_upgrade pyenv-virtualenv
+
 
     pyenv install ${TRAVIS_PYTHON_VERSION}
 
