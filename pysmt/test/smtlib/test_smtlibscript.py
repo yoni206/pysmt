@@ -16,7 +16,7 @@
 #   limitations under the License.
 #
 from six.moves import cStringIO
-
+import os
 import pysmt.smtlib.commands as smtcmd
 from pysmt.shortcuts import And, Or, Symbol, GT, Real, Not
 from pysmt.typing import REAL
