@@ -16,7 +16,7 @@
 #   limitations under the License.
 #
 from six.moves import cStringIO
-import os
+from pysmt.shortcuts import Solver
 import pysmt.smtlib.commands as smtcmd
 from pysmt.shortcuts import And, Or, Symbol, GT, Real, Not
 from pysmt.typing import REAL
@@ -171,7 +171,6 @@ class TestSmtLibScript(TestCase):
                           smtcmd.CHECK_SAT,
                           smtcmd.EXIT,
                           smtcmd.SET_LOGIC,
-                          smtcmd.DECLARE_SORT,
                           smtcmd.DECLARE_CONST,
                           smtcmd.PUSH,
                           smtcmd.POP]:
