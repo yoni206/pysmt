@@ -341,6 +341,16 @@ theory of arrays of arrays of integer index and real value.""",
                 uninterpreted=True)
 
 
+QF_NIRA = Logic(name="NIRA",
+             description=\
+"""closed formulas with free function and predicate symbols over the theory of
+                non-linear integer and real arithmetics.""",
+                arrays=False,
+                integer_arithmetic=True,
+                real_arithmetic=True,
+                linear=False,
+                uninterpreted=False)
+
 LRA = Logic(name="LRA",
             description=\
 """Closed linear formulas in linear real arithmetic.""",
@@ -622,6 +632,7 @@ AUTO = Logic(name="Auto",
 SMTLIB2_LOGICS = frozenset([ AUFLIA,
                              AUFLIRA,
                              AUFNIRA,
+                             QF_NIRA,
                              ALIA,
                              LRA,
                              LIA,
