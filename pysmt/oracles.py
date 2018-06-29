@@ -516,7 +516,6 @@ def get_logic(formula, env=None):
     # Get Quantifier Information
     qf = env.qfo.is_qf(formula)
     theory = env.theoryo.get_theory(formula)
-    print('panda theory = ', theory)
     logic = Logic(name="Detected Logic", description="",
                   quantifier_free=qf, theory=theory)
     # Return a logic supported by PySMT that is close to the one computed
