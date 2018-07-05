@@ -24,7 +24,7 @@ from pysmt.decorators import deprecated
 from pysmt.walkers import DagWalker, IdentityDagWalker, TreeWalker, handles
 import pysmt.typing as types
 import pysmt.operators as op
-from pysmt.shortcuts import Symbol, Equals, And, Implies, Function
+from pysmt.shortcuts import Symbol, Equals, And, Implies, Function, REAL
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -820,6 +820,103 @@ class Ackermanization():
 
 
 # EOC Ackermanization
+
+
+class Purifications:
+
+    def real_int_purify(formula):
+        sorts_to_vars = {}
+        vars_to_pure_vars = {}
+        vars = formula.get_free_variables()
+        for v in vars:
+            vtype = v.symbol_type()
+            if not (vtype.is_real_type() or vtype.is_int_type()):
+                purified_v = Symbol(v.symbol_name() + "__pure", REAL)
+                if v.symbol_type() not in sorts_to_vars.keys():
+                    sorts_to_vars[vtype] = set([])
+                sorts_to_vars[vtype].add(purified_v)
+                vars_to_pure_vars[v] = purified_v
+        pure_formula = formula.substitute(vars_to_pure_vars)
+        inequalities = Purifications.generate_inequalities(sorts_to_vars, vars_to_pure_vars)
+        inequalities_conjunction = And(inequalities)
+        result = And([pure_formula, inequalities_conjunction])
+        return result
+
+    def generate_inequalities(sorts_to_vars, vars_to_pure_vars):
+        result = set([])
+        sorts = sorts_to_vars.keys()
+        for sort1, sort2 in pairwise(sorts):
+            for v1 in sorts_to_vars[sort1]:
+                for v2 in sorts_to_vars[sort2]:
+                    inequality = Not(Equals(vars_to_pure_vars[v1], vars_to_pure_vars[v2]))
+                    result.add(inequality)
+        return result
+
+    def _generate_implication(self, option1, option2, f):
+        left_conjuncts = set([])
+        for i in range(0, len(option1)):
+            const1 = self._terms_to_consts[option1[i]]
+            const2 = self._terms_to_consts[option2[i]]
+            conjunct = Equals(const1, const2)
+            left_conjuncts.add(conjunct)
+        left = And(left_conjuncts)
+        app1 = Function(f, option1)
+        app2 = Function(f, option2)
+        app1_const = self._terms_to_consts[app1]
+        app2_const = self._terms_to_consts[app2]
+        right = Equals(app1_const, app2_const)
+        implication = Implies(left, right)
+        return implication
+
+
+
+
+    def _make_substitutions(self, formula):
+        return formula.substitute(self._terms_to_consts)
+
+    def _fill_maps(self, formula):
+        if formula.is_function_application():
+            function_name = formula.function_name()
+            arguments = formula.args()
+            self._add_args_to_fun(function_name, arguments)
+            self._add_application(formula)
+            for arg in formula.args():
+                self._add_application(arg)
+        else:
+            for arg in formula.args():
+                self._fill_maps(arg)
+
+
+    def _add_application(self, formula):
+        if formula in self._terms_to_consts.keys():
+            pass
+        else:
+            const_name = "__x" + str(self._generate_code(formula)) + "__"
+            if formula.is_function_application():
+                const_type = formula.function_name().symbol_type().return_type
+            else:
+                const_type = formula.get_type()
+            self._terms_to_consts[formula] = Symbol(const_name, const_type)
+
+
+    def _generate_code(self, application):
+        if application in self._indexes:
+            return self._indexes[application]
+        else:
+            self._indexes[application] = len(self._indexes)
+            return self._indexes[application]
+
+    def _add_args_to_fun(self, function_name, args):
+        if function_name not in self._funs_to_args.keys():
+            self._funs_to_args[function_name] = set([])
+        self._funs_to_args[function_name].add(args)
+
+
+
+# EOC Ackermanization
+
+
+
 
 
 def nnf(formula, environment=None):
