@@ -685,6 +685,24 @@ class TimesDistributor(IdentityDagWalker):
 
 
 
+class Skolemization():
+    def __init__(self, env):
+        self._env = env
+        pass
+
+    #only skolem constants
+    def simple_skolemization(self, formula):
+        prenex_normalizer = PrenexNormalizer()
+        quantifications, matrix = prenex_normalizer.walk(formula)
+        quantifier, variables = quantifications[0]
+        assert (quantifier == self._env.formula_manager.Exists)
+        assert (len(quantifications) == 1)
+        mgr = self._env.formula_manager
+        subs = dict((x, mgr.FreshSymbol(x.symbol_type())) for x in variables)
+        substitued_matrix = matrix.substitute(subs)
+        return substitued_matrix
+
+
 class Ackermanization():
     def __init__(self, environment=None):
         #funs_to_args keeps for every function symbol f,
@@ -700,9 +718,13 @@ class Ackermanization():
         #maps each application to an index, used for the constant generation
         self._indexes = {}
 
+    def _print_map(self, m):
+        for k in m.keys():
+            print(m[k], "<~ ", k)
 
     def do_ackermanization(self, formula):
         self._fill_maps(formula)
+        self._print_map(self._terms_to_consts)
         #function consistency
         implications = self._get_equality_implications()
         function_consistency = And(implications)
@@ -714,9 +736,9 @@ class Ackermanization():
         else:
             result = And(function_consistency, substitued_formula)
         #clean dictionary for future formulas
-        self._funs_to_args = {}
-        self._terms_to_consts = {}
-        self._indexes = {}
+        #self._funs_to_args = {}
+        #self._terms_to_consts = {}
+        #self._indexes = {}
 
         return result
 

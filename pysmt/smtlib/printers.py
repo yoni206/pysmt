@@ -25,6 +25,34 @@ from pysmt.walkers import TreeWalker, DagWalker, handles
 from pysmt.utils import quote
 
 
+
+class LimitedSmtPrinter():
+    def __init__(self):
+        buf = cStringIO()
+        self._smt_printer = SmtPrinter(buf)
+
+    def printer(self, formula):
+        variables = formula.get_free_variables()
+        sort_declarations = set([])
+        function_declarations = []
+        for variable in variables:
+            name = variable.symbol_name()
+            var_type = variable.symbol_type()
+            function_declaration = "(declare-fun " + name + " () "  + str(var_type) + " )"
+            if not (var_type.is_real_type() or var_type.is_int_type()):
+                sort_declaration = "(declare-sort " + str(var_type) + " 0)"
+                sort_declarations.add(sort_declaration)
+            function_declarations.append(function_declaration)
+        smtlib_formula = to_smtlib(formula, False)
+        assertion = "(assert " + smtlib_formula + " )"
+        check_sat = "(check-sat)"
+        commands = []
+        commands.extend(sort_declarations)
+        commands.extend(function_declarations)
+        commands.append(assertion)
+        commands.append(check_sat)
+        return "\n".join(commands)
+
 class SmtPrinter(TreeWalker):
 
     def __init__(self, stream):
