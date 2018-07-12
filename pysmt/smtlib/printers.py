@@ -38,10 +38,24 @@ class LimitedSmtPrinter():
         for variable in variables:
             name = variable.symbol_name()
             var_type = variable.symbol_type()
-            function_declaration = "(declare-fun " + name + " () "  + str(var_type) + " )"
-            if not (var_type.is_real_type() or var_type.is_int_type()):
-                sort_declaration = "(declare-sort " + str(var_type) + " 0)"
-                sort_declarations.add(sort_declaration)
+            types = []
+            if var_type.is_function_type():
+                par_types = var_type.param_types
+                ret_type = var_type.return_type
+                types.extend(par_types)
+                types.append(ret_type)
+                function_declaration = "(declare-fun " + name + \
+                    "( " + " ".join(list(str(pt) for pt in par_types)) + \
+                    ") " + str(ret_type) + \
+                    ")"
+            else:
+                function_declaration = "(declare-fun " + name + " () "  + str(var_type) + " )"
+                types.append(var_type)
+
+            for ftype in types:
+                if not (ftype.is_real_type() or ftype.is_int_type()):
+                    sort_declaration = "(declare-sort " + str(ftype) + " 0)"
+                    sort_declarations.add(sort_declaration)
             function_declarations.append(function_declaration)
         smtlib_formula = to_smtlib(formula, False)
         assertion = "(assert " + smtlib_formula + " )"

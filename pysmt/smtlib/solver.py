@@ -127,8 +127,6 @@ class SmtLibSolver(Solver):
     def _get_answer(self):
         """Reads a line from STDOUT pipe"""
         res = self.solver_stdout.readline().strip()
-        print('panda res = ', res)
-        print('panda res = ', res)
         self._debug("Read: %s", res)
         return res
 

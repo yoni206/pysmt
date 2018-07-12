@@ -806,7 +806,6 @@ class SmtLibParser(object):
                 except IndexError:
                     raise PysmtSyntaxError("Unexpected ')'",
                                            tokens.pos_info)
-
                 try:
                     res = fun(*lst)
                 except TypeError as err:
@@ -1172,7 +1171,7 @@ class SmtLibParser(object):
         bindings = []
         for (x,t) in namedparams:
             v = self.env.formula_manager.FreshSymbol(typename=t,
-                                                        template="__"+x+"%d")
+                                                        template="__"+x+"__"+"%d")
             self.cache.bind(x, v)
             formal.append(v) #remember the variable
             bindings.append(x) #remember the name
