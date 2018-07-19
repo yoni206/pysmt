@@ -788,9 +788,8 @@ class Ackermanization():
             self._add_application(formula)
             for arg in formula.args():
                 self._add_application(arg)
-        else:
-            for arg in formula.args():
-                self._fill_maps(arg)
+        for arg in formula.args():
+            self._fill_maps(arg)
 
 
     def _add_application(self, formula):
