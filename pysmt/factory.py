@@ -29,7 +29,7 @@ from six import iteritems
 from pysmt.exceptions import (NoSolverAvailableError, SolverRedefinitionError,
                               NoLogicAvailableError,
                               SolverAPINotFound)
-from pysmt.logics import QF_UFLIRA, LRA, QF_UFLRA
+from pysmt.logics import QF_UFLIRA, LRA, QF_UFLRA, NIA, NRA, UFNIRAt
 from pysmt.logics import AUTO as AUTO_LOGIC
 from pysmt.logics import most_generic_logic, get_closer_logic
 from pysmt.logics import convert_logic_from_string
@@ -86,7 +86,16 @@ class Factory(object):
         self._get_available_solvers()
         self._get_available_qe()
         self._get_available_interpolators()
+        
+        #add cmd-line version of solvers that will be used in hermes.
+        self._add_generic_solvers()
 
+    
+    def _add_generic_solvers(self):
+        this_dir_path = os.path.dirname(os.path.realpath(__file__))
+        generic_solvers_scripts_dir = os.path.realpath(this_dir_path + "/../generic_solvers_scripts")
+        print("panda ", generic_solvers_scripts_dir)
+        self.add_generic_solver("generic_cvc4", generic_solvers_scripts_dir + "/generic_z3.sh", list(self.Solver("cvc4").LOGICS | set([NIA, NRA, convert_logic_from_string("UFNIRAt")])))
 
     def get_solver(self, name=None, logic=None, **options):
         SolverClass, closer_logic = \
@@ -441,9 +450,12 @@ class Factory(object):
     ## Wrappers: These functions are exported in shortcuts
     ##
     def Solver(self, name=None, logic=None, **options):
-        return self.get_solver(name=name,
+        try:
+            return self.get_solver(name=name,
                                logic=logic,
                                **options)
+        except NoSolverAvailableError:
+            return self.get_solver(name="generic_" + name, logic=logic, **options)
 
     def UnsatCoreSolver(self, name=None, logic=None,
                         unsat_cores_mode="all"):

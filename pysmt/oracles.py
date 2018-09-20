@@ -509,6 +509,15 @@ class TypesOracle(walkers.DagWalker):
 
 # EOC TypesOracle
 
+def get_raw_logic(formula, env=None):
+    if env is None:
+        env = pysmt.environment.get_env()
+    # Get Quantifier Information
+    qf = env.qfo.is_qf(formula)
+    theory = env.theoryo.get_theory(formula)
+    logic = Logic(name="Detected Logic", description="",
+                  quantifier_free=qf, theory=theory)
+    return logic
 
 def get_logic(formula, env=None):
     if env is None:
