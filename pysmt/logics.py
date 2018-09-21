@@ -330,6 +330,19 @@ one- and two-dimentional arrays of integer index and real value.""",
                 uninterpreted=True)
 
 
+
+QF_UFNIRAt = Logic(name="QF_UFNIRAt",
+                description=\
+"""Closed formulas with free function and predicate symbols over a
+theory of integers and reals and uf. t is to say that custom types (sorts) are also supported.""",
+                arrays=False,
+                integer_arithmetic=True,
+                real_arithmetic=True,
+                linear=False,
+                uninterpreted=True,
+                custom_type=True,
+                quantifier_free=True)
+
 UFNIRAt = Logic(name="UFNIRAt",
                 description=\
 """Closed formulas with free function and predicate symbols over a
@@ -644,6 +657,7 @@ SMTLIB2_LOGICS = frozenset([ AUFLIA,
                              AUFLIRA,
                              AUFNIRA,
                              UFNIRAt,
+                             QF_UFNIRAt,
                              QF_NIRA,
                              ALIA,
                              LRA,

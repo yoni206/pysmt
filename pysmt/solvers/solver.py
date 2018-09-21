@@ -70,6 +70,10 @@ class Solver(object):
         """
         raise NotImplementedError
 
+    #generic in the sense that it is operated through the command line
+    def is_generic(self):
+        return False
+
     def get_model(self):
         """Returns an instance of Model that survives the solver instance.
 

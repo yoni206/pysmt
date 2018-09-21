@@ -14,7 +14,7 @@
 
 import time
 from io import TextIOWrapper
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, run
 
 from six import PY2
 
@@ -98,6 +98,9 @@ class SmtLibSolver(Solver):
         self.options(self)
         self.set_logic(logic)
 
+    def is_generic(self):
+        return True
+
     def set_option(self, name, value):
         self._send_silent_command(SmtLibCommand(smtcmd.SET_OPTION,
                                                 [name, value]))
@@ -123,6 +126,27 @@ class SmtLibSolver(Solver):
         """Sends a command to the STDIN pipe and awaits for acknowledgment."""
         self._send_command(cmd)
         #self._check_success()
+
+    def solve_smtlib_file(self, smtlib_file):
+        command = []
+        command.append(self.args)
+        command.append(smtlib_file)
+        result_object = run(command,stdout = PIPE)
+        result_string = result_object.stdout.decode('utf-8')
+        result = self._parse_result(result_string)
+        values = []
+        #TODO take care of calues
+        return result, values
+        
+    def _parse_result(self, result_string):
+        if "unsat" in result_string:
+            return False
+        elif "sat" in result_string:
+            return True
+        elif "unknown" in result_string:
+            raise SolverReturnedUnknownResultError
+        else:
+            raise UnknownSolverAnswerError("Solver returned: " + result_string)
 
     def _get_answer(self):
         """Reads a line from STDOUT pipe"""
