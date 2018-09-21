@@ -18,6 +18,7 @@ from subprocess import Popen, PIPE, run
 
 from six import PY2
 
+from sexpdata import loads, dumps, car, cdr
 import pysmt.smtlib.commands as smtcmd
 from pysmt.solvers.eager import EagerModel
 from pysmt.smtlib.parser import SmtLibParser
@@ -134,10 +135,24 @@ class SmtLibSolver(Solver):
         result_object = run(command,stdout = PIPE)
         result_string = result_object.stdout.decode('utf-8')
         result = self._parse_result(result_string)
-        values = []
+        values = self._parse_values(result_string)
         #TODO take care of calues
         return result, values
         
+    def _parse_values(self, result_string):
+      #tested just for yices.
+      values = []
+      #remove sat/unsat line
+      values_lines = result_string.splitlines()[1:]
+      #remove leading and trailing paren
+      values_lines[0] = values_lines[0][1:]
+      values_lines[-1] = values_lines[-1][0:-1]
+      for line in values_lines:
+          e = loads(line)
+          values.append(dumps(cdr(e)))
+      return values
+
+
     def _parse_result(self, result_string):
         if "unsat" in result_string:
             return False
