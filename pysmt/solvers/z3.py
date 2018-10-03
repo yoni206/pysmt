@@ -275,7 +275,7 @@ class Z3Solver(IncrementalTrackingSolver, UnsatCoreSolver,
 
     def get_value(self, item):
         self._assert_no_function_type(item)
-
+        
         titem = self.converter.convert(item)
         z3_res = self.z3.model().eval(titem, model_completion=True)
         res = self.converter.back(z3_res, self.z3.model())

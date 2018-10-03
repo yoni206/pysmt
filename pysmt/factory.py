@@ -105,7 +105,6 @@ class Factory(object):
                                   default_logic=self.default_logic,
                                   name=name,
                                   logic=logic)
-
         return SolverClass(environment=self.environment,
                            logic=closer_logic,
                            **options)
@@ -165,7 +164,6 @@ class Factory(object):
                name not in self._filter_solvers(solver_list, logic=logic):
                 raise NoSolverAvailableError("%s '%s' does not support logic %s"%
                                              (solver_type, name, logic))
-
             SolverClass = solver_list[name]
             if logic is None:
                 try:

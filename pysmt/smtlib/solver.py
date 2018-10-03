@@ -25,7 +25,7 @@ from pysmt.smtlib.parser import SmtLibParser
 from pysmt.smtlib.script import SmtLibCommand
 from pysmt.solvers.solver import Solver, SolverOptions
 from pysmt.exceptions import (SolverReturnedUnknownResultError,
-                              UnknownSolverAnswerError, PysmtValueError)
+                              UnknownSolverAnswerError, PysmtValueError,InternalSolverError)
 
 
 class SmtLibOptions(SolverOptions):
@@ -136,7 +136,6 @@ class SmtLibSolver(Solver):
         result_string = result_object.stdout.decode('utf-8')
         result = self._parse_result(result_string)
         values = self._parse_values(result_string)
-        #TODO take care of calues
         return result, values
         
     def _parse_values(self, result_string):
@@ -148,10 +147,15 @@ class SmtLibSolver(Solver):
       values_lines[0] = values_lines[0][1:]
       values_lines[-1] = values_lines[-1][0:-1]
       for line in values_lines:
-          e = loads(line)
-          values.append(dumps(cdr(e)))
+          if self._has_error(line):
+              values.append("__")
+          else:
+            e = loads(line)
+            values.append(dumps(cdr(e)))
       return values
-
+     
+    def _has_error(self, text):
+      return "error" in text.lower()
 
     def _parse_result(self, result_string):
         if "unsat" in result_string:
