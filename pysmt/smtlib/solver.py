@@ -187,22 +187,22 @@ class SmtLibSolver(Solver):
         return lst
     
     def _declare_sort(self, sort):
-<<<<<<< HEAD
         if not sort.is_function_type():
             cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
             self._send_silent_command(cmd)
             self.declared_sorts.add(sort)
-=======
         cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
         self._send_silent_command(cmd)
         self.declared_sorts.add(sort)
->>>>>>> SMTLIB: Supporting custom sorts in generic solvers (#524)
 
     def _declare_variable(self, symbol):
         sorts = self.to.get_types(symbol, custom_only=True)
         for s in sorts:
             if s not in self.declared_sorts:
                 self._declare_sort(s)
+        sort = symbol.symbol_type()
+        if sort not in self.declared_sorts:
+            self._declare_sort(sort)
         cmd = SmtLibCommand(smtcmd.DECLARE_FUN, [symbol])
         self._send_silent_command(cmd)
         self.declared_vars.add(symbol)
@@ -234,12 +234,9 @@ class SmtLibSolver(Solver):
         # recognize N * M * x as a non-linear term
         formula = formula.simplify()
         sorts = self.to.get_types(formula, custom_only=True)
-<<<<<<< HEAD
-=======
         for s in sorts:
             if s not in self.declared_sorts:
                 self._declare_sort(s)
->>>>>>> SMTLIB: Supporting custom sorts in generic solvers (#524)
         deps = formula.get_free_variables()
         for d in deps:
             if d not in self.declared_vars:
