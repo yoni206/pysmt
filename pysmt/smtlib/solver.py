@@ -27,6 +27,9 @@ from pysmt.solvers.solver import Solver, SolverOptions
 from pysmt.exceptions import (SolverReturnedUnknownResultError,
                               UnknownSolverAnswerError, PysmtValueError,InternalSolverError)
 from pysmt.oracles import TypesOracle
+from six.moves import cStringIO
+
+
 
 class SmtLibOptions(SolverOptions):
     """Options for the SmtLib Solver.
@@ -47,7 +50,12 @@ class SmtLibOptions(SolverOptions):
     def __call__(self, solver):
         # These options are needed for the wrapper to work
         solver.set_option(":print-success", "true")
-        solver.set_option(":diagnostic-output-channel", '"stdout"')
+        try:
+            solver.set_option(":diagnostic-output-channel", "stdout")
+        except UnknownSolverAnswerError:
+            solver.set_option(":diagnostic-output-channel", '"stdout"')
+
+
 
         if self.generate_models:
             solver.set_option(":produce-models", "true")
@@ -181,11 +189,16 @@ class SmtLibSolver(Solver):
         return lst
     
     def _declare_sort(self, sort):
-        cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
-        self._send_silent_command(cmd)
-        self.declared_sorts.add(sort)
+        if not sort.is_function_type():
+            cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
+            self._send_silent_command(cmd)
+            self.declared_sorts.add(sort)
 
     def _declare_variable(self, symbol):
+        sorts = self.to.get_types(symbol, custom_only=True)
+        for s in sorts:
+            if s not in self.declared_sorts:
+                self._declare_sort(s)
         cmd = SmtLibCommand(smtcmd.DECLARE_FUN, [symbol])
         self._send_silent_command(cmd)
         self.declared_vars.add(symbol)
@@ -217,9 +230,6 @@ class SmtLibSolver(Solver):
         # recognize N * M * x as a non-linear term
         formula = formula.simplify()
         sorts = self.to.get_types(formula, custom_only=True)
-        for s in sorts:
-            if s not in self.declared_sorts:
-                self._declare_sort(s)
         deps = formula.get_free_variables()
         for d in deps:
             if d not in self.declared_vars:

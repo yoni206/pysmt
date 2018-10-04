@@ -173,8 +173,6 @@ class Factory(object):
                     else:
                         raise NoLogicAvailableError("Cannot automatically select a logic")
             closer_logic = get_closer_logic(SolverClass.LOGICS, logic)
-            print("panda", logic)
-            print("panda", closer_logic)
 
             return SolverClass, closer_logic
 
