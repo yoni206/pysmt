@@ -97,7 +97,7 @@ class SmtLibSolver(Solver):
 
         # Initialize solver
         self.options(self)
-        self.set_logic(logic)
+        self.set_logic(logic.common_name())
 
     def is_generic(self):
         return True
@@ -126,7 +126,7 @@ class SmtLibSolver(Solver):
     def _send_silent_command(self, cmd):
         """Sends a command to the STDIN pipe and awaits for acknowledgment."""
         self._send_command(cmd)
-        #self._check_success()
+        self._check_success()
 
     def solve_smtlib_file(self, smtlib_file):
         command = []

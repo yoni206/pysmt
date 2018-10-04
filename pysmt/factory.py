@@ -153,7 +153,6 @@ class Factory(object):
                           default_logic, name=None, logic=None):
         if len(solver_list) == 0:
             raise NoSolverAvailableError("No %s is available" % solver_type)
-
         logic = convert_logic_from_string(logic)
         if name is not None:
             if name not in solver_list:
@@ -173,8 +172,9 @@ class Factory(object):
                         logic = default_logic
                     else:
                         raise NoLogicAvailableError("Cannot automatically select a logic")
-
             closer_logic = get_closer_logic(SolverClass.LOGICS, logic)
+            print("panda", logic)
+            print("panda", closer_logic)
 
             return SolverClass, closer_logic
 
@@ -448,7 +448,7 @@ class Factory(object):
     ## Wrappers: These functions are exported in shortcuts
     ##
     def Solver(self, name=None, logic=None, **options):
-        if name not in ["cvc4", "yices"]:
+        if name not in ["cvc4", "yices", "mathsat", "generic-yices"]:
             logic=None
         try:
             return self.get_solver(name=name,

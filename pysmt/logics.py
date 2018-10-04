@@ -249,6 +249,13 @@ class Logic(object):
     def is_quantified(self):
         """Return whether the logic supports quantifiers."""
         return not self.quantifier_free
+    
+    def common_name(self):
+        """if logic name ends with "t" (pysmt's internal representation of custom sorts), delete it."""
+        if self.name.endswith("t"):
+            return self.name[:-1]
+        else:
+            return self.name
 
     def __str__(self):
         return self.name

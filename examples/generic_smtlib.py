@@ -26,14 +26,13 @@ from pysmt.typing import REAL, INT
 from pysmt.exceptions import NoSolverAvailableError
 
 name = "mathsat" # Note: The API version is called 'msat'
-path = ["/tmp/mathsat.sh"] # Path to the solver
+path = ["/home/yoniz/git/pysmt/generic_solvers_scripts/generic_mathsat.sh"] # Path to the solver
 logics = [QF_UFLRA, QF_UFIDL] # Some of the supported logics
 
 env = get_env()
 
 # Add the solver to the environment
 env.factory.add_generic_solver(name, path, logics)
-
 r, s = Symbol("r", REAL), Symbol("s", REAL)
 p, q = Symbol("p", INT), Symbol("q", INT)
 
