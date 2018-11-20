@@ -28,6 +28,8 @@ from pysmt.exceptions import (SolverReturnedUnknownResultError,
                               UnknownSolverAnswerError, PysmtValueError,InternalSolverError)
 from pysmt.oracles import TypesOracle
 from six.moves import cStringIO
+                              UnknownSolverAnswerError, PysmtValueError)
+from pysmt.oracles import TypesOracle
 
 class SmtLibOptions(SolverOptions):
     """Options for the SmtLib Solver.
@@ -191,9 +193,6 @@ class SmtLibSolver(Solver):
             cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
             self._send_silent_command(cmd)
             self.declared_sorts.add(sort)
-        cmd = SmtLibCommand(smtcmd.DECLARE_SORT, [sort])
-        self._send_silent_command(cmd)
-        self.declared_sorts.add(sort)
 
     def _declare_variable(self, symbol):
         sorts = self.to.get_types(symbol, custom_only=True)
