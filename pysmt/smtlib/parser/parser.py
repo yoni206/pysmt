@@ -454,6 +454,7 @@ class SmtLibParser(object):
                          smtcmd.DECLARE_CONST : self._cmd_declare_const,
                          smtcmd.DECLARE_FUN : self._cmd_declare_fun,
                          smtcmd.DECLARE_SORT: self._cmd_declare_sort,
+                         smtcmd.DECLARE_DATATYPES: self._cmd_declare_datatypes,
                          smtcmd.DEFINE_FUN : self._cmd_define_fun,
                          smtcmd.DEFINE_FUNS_REC : self._cmd_define_funs_rec,
                          smtcmd.DEFINE_FUN_REC : self._cmd_define_fun_rec,
@@ -825,8 +826,6 @@ class SmtLibParser(object):
                                                tokens.pos_info)
 
                     try:
-                        print(lst)
-                        print(fun)
                         res = fun(*lst)
                     except TypeError as err:
                         if not callable(fun):
@@ -914,6 +913,16 @@ class SmtLibParser(object):
                                "at most %d arguments." %\
                                (current, command, max_size),
                                tokens.pos_info)
+    
+    def parse_types(self, tokens, command, type_params=None, additional_token=None):
+        self.consume_opening(tokens, command)
+        current = tokens.consume()
+        res = []
+        while current != ")":
+            typ = self.parse_type(tokens, command, type_params, additional_token)
+            res.append[typ]
+            current = tokens.consume()
+        return res
 
     def parse_type(self, tokens, command, type_params=None, additional_token=None):
         """Parses a single type name from the tokens"""
@@ -1189,7 +1198,6 @@ class SmtLibParser(object):
         params = self.parse_params(tokens, current)
         typename = self.parse_type(tokens, current)
         self.consume_closing(tokens, current)
-
         if params:
             typename = self.env.type_manager.FunctionType(typename, params)
 
@@ -1223,6 +1231,73 @@ class SmtLibParser(object):
         self.consume_closing(tokens, current)
         self.cache.define(var, formal, ebody)
         return SmtLibCommand(current, [var, formal, rtype, ebody])
+
+    def parse_datatypes_introductions(self, current, tokens):
+        self.consume_opening(tokens, current)
+        current = tokens.consume()
+        deltas_and_ks = []
+        while current != ")":
+            (delta, k) = self.parse_atoms(tokens, current, 2)
+            #the datatype delta as a pysmt type
+            type_ = self.env.type_manager.DataType(delta, int(k))
+            self.cache.bind(delta, type_)
+            delta_and_k = (delta, int(k))
+            deltas_and_ks.append(delta_and_k)
+            current = tokens.consume()
+        return deltas_and_ks
+    
+    def parse_datatype_declaration(self, current, tokens, k):
+        par = False
+        us = []
+        if k > 0:
+            current = tokens.consume()
+            return self._cmd_not_implemented(current, tokens)
+        current = tokens.consume()
+        l = self.parse_constructors_list(current, tokens)
+        d = (par, us, l)
+        return d
+
+    def parse_datatypes_declarations(self, current, tokens, deltas_and_ks):
+        self.consume_opening(tokens, current)
+        i = 0
+        current = tokens.consume()
+        ds = []
+        while current != ")":
+            deltai_and_ki = deltas_and_ks[i]
+            ki = deltai_and_ki[1]
+            k = ki
+            d = self.parse_datatype_declaration(current, tokens, k)
+            ds.append(d)
+            current = tokens.consume()
+        return ds
+
+    def _cmd_declare_datatypes(self, current, tokens):
+        """(declare-datatypes ((delta_1 k_1) ... (delta_n k_n)) (d_1,...,d_n))"""
+        deltas_and_ks = self.parse_datatypes_introductions(current, tokens)
+        ds = self.parse_datatypes_declarations(current, tokens, deltas_and_ks)
+        return SmtLibCommand(current, [deltas_and_ks, ds])
+
+    def parse_constructors_list(self, current, tokens):
+        l = []
+        while current != ")":
+            c = self.parse_atom(tokens, current)
+            current = tokens.consume()
+            ss_and_taus = self.parse_selectors(tokens, current)
+            constructor_def = (c, ss_and_taus)
+            l.append(constructor_def)
+            current = tokens.consume()
+        return l
+
+    def parse_selectors(self, tokens, current):
+        ret = []
+        while current != ")":
+            si = self.parse_atom(tokens, current)
+            taui = self.parse_type(tokens, current)
+            si_and_taui = (si, taui)
+            ret.append(si_and_taui)
+            current = tokens.consume()
+        self.consume_closing(tokens, current)
+        return ret
 
     def _cmd_declare_sort(self, current, tokens):
         """(declare-sort <symbol> <numeral>)"""

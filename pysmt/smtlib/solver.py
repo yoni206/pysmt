@@ -28,8 +28,6 @@ from pysmt.exceptions import (SolverReturnedUnknownResultError,
                               UnknownSolverAnswerError, PysmtValueError,InternalSolverError)
 from pysmt.oracles import TypesOracle
 from six.moves import cStringIO
-                              UnknownSolverAnswerError, PysmtValueError)
-from pysmt.oracles import TypesOracle
 
 class SmtLibOptions(SolverOptions):
     """Options for the SmtLib Solver.

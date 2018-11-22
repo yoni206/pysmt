@@ -24,6 +24,7 @@ In the current version these are:
  * BVType
  * FunctionType
  * ArrayType
+ * Datatypes
 
 Types are represented by singletons. Basic types (Bool, Int and Real)
 are constructed here by default, while BVType and FunctionType relies
@@ -44,7 +45,7 @@ class PySMTType(object):
 
     """
 
-    def __init__(self, decl=None, basename=None, args=None):
+    def __init__(self, decl=None, data_decl=None, basename=None, args=None):
         if decl:
             self.decl = decl
             self.basename = decl.name
@@ -59,7 +60,10 @@ class PySMTType(object):
             self.basename = basename
             self.arity = len(args) if args else 0
             self.custom_type = False
-
+        if data_decl:
+            self.decl = data_decl
+            self.basename = data_decl.name
+            self.arity = data_decl.arity
         self.args = args
         if self.args:
             args_str = "{%s}" % ", ".join(str(a) for a in self.args)
@@ -328,6 +332,23 @@ class _FunctionType(PySMTType):
     def __hash__(self):
         return self._hash
 
+class _DataTypeDecl(object):
+    """Create a new DataType Declaration.
+
+    This is equivalent to the SMT-lib command "declare-datatype".
+    """
+    
+    def __init__(self, name, arity):
+        self.name = name
+        self.arity = arity
+
+    def __str__(self):
+        return "%s/%s" % (self.name, self.arity)
+
+    def __repr__(self):
+        return self.__str__()
+
+#EOC _DataTypeDecl
 
 class _TypeDecl(object):
     """Create a new Type Declaration (sort).
@@ -417,6 +438,8 @@ class TypeManager(object):
         self._array_types = {}
         self._custom_types = {}
         self._custom_types_decl = {}
+        self._data_types = {}
+        self._data_types_decl = {}
         self._bool = None
         self._real = None
         self._int = None
@@ -502,6 +525,25 @@ class TypeManager(object):
             self._array_types[key] = ty
         return ty
 
+    def DataType(self, name, arity=0):
+        """Creates a new DataType Declaration
+
+        This is equivalent to the SMT-LIB command "declare-datatype"
+
+        """
+
+        try:
+            dtd = self._data_types_decl[name]
+            if dtd.arity != arity:
+                raise PysmtValueError("DataType %s previously declared with arity "\
+                                      " %d." % (name, dtd.arity))
+        except KeyError:
+            dtd = _DataTypeDecl(name, arity)
+            self._data_types_decl[name] = dtd
+        assert(arity == 0)
+        return self.get_datatype_instance(dtd)
+
+
     def Type(self, name, arity=0):
         """Creates a new Type Declaration (sort declaration).
 
@@ -526,6 +568,15 @@ class TypeManager(object):
             # Automatically instantiate 0-arity types
             return self.get_type_instance(td)
         return td
+
+    def get_datatype_instance(self, datatype_decl, *args):
+        key = datatype_decl
+        try:
+            daty = self._data_types[key]
+        except KeyError:
+            daty = PySMTType(data_decl=datatype_decl, args=args)
+            self._data_types[key] = daty
+        return daty
 
     def get_type_instance(self, type_decl, *args):
         """Creates an instance of the TypeDecl with the given arguments."""
