@@ -94,7 +94,7 @@ class Factory(object):
         this_dir_path = os.path.dirname(os.path.realpath(__file__))
         generic_solvers_scripts_dir = os.path.realpath(this_dir_path + "/../generic_solvers_scripts")
         self.add_generic_solver("generic_cvc4", generic_solvers_scripts_dir + "/generic_cvc4.sh", list(self.Solver("cvc4").LOGICS | set([NIA, NRA, convert_logic_from_string("UFNIRAt")])))
-        self.add_generic_solver("generic_yices", generic_solvers_scripts_dir + "/generic_yices.sh", list(self.Solver("yices").LOGICS | set([convert_logic_from_string("QF_UFNIRAt")])))
+        #self.add_generic_solver("generic_yices", generic_solvers_scripts_dir + "/generic_yices.sh", list(self.Solver("yices").LOGICS | set([convert_logic_from_string("QF_UFNIRAt")])))
 
     def get_solver(self, name=None, logic=None, **options):
         SolverClass, closer_logic = \

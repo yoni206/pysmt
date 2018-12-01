@@ -275,7 +275,7 @@ class Z3Solver(IncrementalTrackingSolver, UnsatCoreSolver,
 
     def get_value(self, item):
         self._assert_no_function_type(item)
-        
+        print("panda", item)
         titem = self.converter.convert(item)
         z3_res = self.z3.model().eval(titem, model_completion=True)
         res = self.converter.back(z3_res, self.z3.model())
@@ -453,8 +453,11 @@ class Z3Converter(Converter, DagWalker):
 
     @catch_conversion_error
     def convert(self, formula):
+        print("panda convert 1")
         z3term = self.walk(formula)
+        print("panda convert 2")
         ref_class = self.get_z3_ref(formula)
+        print("panda convert 3")
         return ref_class(z3term, self.ctx)
 
     def back(self, expr, model=None):
