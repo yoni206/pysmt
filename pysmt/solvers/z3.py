@@ -430,6 +430,8 @@ class Z3Converter(Converter, DagWalker):
                 return z3.ArrayRef
             elif type_.is_bv_type():
                 return z3.BitVecRef
+            elif type_.is_custom_type():
+                return z3.SortRef
             else:
                 raise NotImplementedError(formula)
         elif formula.node_type() in op.ARRAY_OPERATORS:
@@ -839,6 +841,8 @@ class Z3Converter(Converter, DagWalker):
                                    self._z3_to_type(sort.range()))
         elif sort.kind() == z3.Z3_BV_SORT:
             return types.BVType(sort.size())
+        elif sort.kind() == z3.Z3_UNINTERPRETED_SORT:
+            return types.Type(str(sort))
         else:
             raise NotImplementedError("Unsupported sort in conversion: %s" % sort)
 
