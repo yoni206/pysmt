@@ -155,6 +155,8 @@ class Factory(object):
         logic = convert_logic_from_string(logic)
         if name is not None:
             if name not in solver_list:
+                print("panda", solver_list.keys())
+                print("panda", name)
                 raise NoSolverAvailableError("%s '%s' is not available" % \
                                              (solver_type, name))
 

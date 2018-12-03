@@ -1286,6 +1286,7 @@ class SmtLibParser(object):
             constructor_def = (c, ss_and_taus)
             l.append(constructor_def)
             current = tokens.consume()
+        self.consume_closing(tokens, current)
         return l
 
     def parse_selectors(self, tokens, current):
@@ -1296,7 +1297,9 @@ class SmtLibParser(object):
             si_and_taui = (si, taui)
             ret.append(si_and_taui)
             current = tokens.consume()
-        self.consume_closing(tokens, current)
+        #in case there were no selectors, there is no additional paren to close.
+        if len(ret) != 0:
+            self.consume_closing(tokens, current)
         return ret
 
     def _cmd_declare_sort(self, current, tokens):

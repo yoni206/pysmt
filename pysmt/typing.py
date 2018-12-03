@@ -64,6 +64,7 @@ class PySMTType(object):
             self.decl = data_decl
             self.basename = data_decl.name
             self.arity = data_decl.arity
+            self.datatype = data_decl.datatype
         self.args = args
         if self.args:
             args_str = "{%s}" % ", ".join(str(a) for a in self.args)
@@ -98,6 +99,9 @@ class PySMTType(object):
 
     def is_custom_type(self):
         return self.custom_type
+
+    def is_datatype(self):
+        return self.datatype
 
     def __hash__(self):
         return hash(self.name)
@@ -341,6 +345,15 @@ class _DataTypeDecl(object):
     def __init__(self, name, arity):
         self.name = name
         self.arity = arity
+        self.datatype = False
+
+    def __call__(self, *args):
+        env = pysmt.environment.get_env()
+        # Note: This uses the global type manager
+        if not env.enable_infix_notation:
+            raise PysmtModeError("Infix notation disabled. "
+                                 "Use type_manager.get_type_instance instead.")
+        return env.type_manager.get_datatype_instance(self, *args)
 
     def __str__(self):
         return "%s/%s" % (self.name, self.arity)
@@ -348,6 +361,9 @@ class _DataTypeDecl(object):
     def __repr__(self):
         return self.__str__()
 
+    def set_datatype_flag(self):
+        assert self.datatype == False
+        self.datatype = True
 #EOC _DataTypeDecl
 
 class _TypeDecl(object):
@@ -539,6 +555,7 @@ class TypeManager(object):
                                       " %d." % (name, dtd.arity))
         except KeyError:
             dtd = _DataTypeDecl(name, arity)
+            dtd.set_datatype_flag()
             self._data_types_decl[name] = dtd
         assert(arity == 0)
         return self.get_datatype_instance(dtd)

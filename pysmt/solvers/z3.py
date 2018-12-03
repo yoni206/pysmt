@@ -275,7 +275,6 @@ class Z3Solver(IncrementalTrackingSolver, UnsatCoreSolver,
 
     def get_value(self, item):
         self._assert_no_function_type(item)
-        print("panda", item)
         titem = self.converter.convert(item)
         z3_res = self.z3.model().eval(titem, model_completion=True)
         res = self.converter.back(z3_res, self.z3.model())
@@ -396,6 +395,9 @@ class Z3Converter(Converter, DagWalker):
                                askey(value))] = sort
         return sort
 
+    def z3DataType(self, dt):
+        return "a"
+
     def z3Sort(self, name):
         """Return the z3 Sort for the given name."""
         name = str(name)
@@ -430,6 +432,8 @@ class Z3Converter(Converter, DagWalker):
                 return z3.ArrayRef
             elif type_.is_bv_type():
                 return z3.BitVecRef
+            elif type_.is_custom_type():
+                return z3.SortRef
             else:
                 raise NotImplementedError(formula)
         elif formula.node_type() in op.ARRAY_OPERATORS:
@@ -453,11 +457,8 @@ class Z3Converter(Converter, DagWalker):
 
     @catch_conversion_error
     def convert(self, formula):
-        print("panda convert 1")
         z3term = self.walk(formula)
-        print("panda convert 2")
         ref_class = self.get_z3_ref(formula)
-        print("panda convert 3")
         return ref_class(z3term, self.ctx)
 
     def back(self, expr, model=None):
@@ -551,7 +552,7 @@ class Z3Converter(Converter, DagWalker):
                 except UndefinedSymbolError:
                     import warnings
                     symb_type = self._z3_to_type(expr.sort())
-                    warnings.warn("Defining new symbol: %s" % str(expr))
+                    #warnings.warn("Defining new symbol: %s" % str(expr))
                     return self.mgr.FreshSymbol(symb_type,
                                                 template="__z3_%d")
         elif z3.is_function(expr):
@@ -842,6 +843,8 @@ class Z3Converter(Converter, DagWalker):
                                    self._z3_to_type(sort.range()))
         elif sort.kind() == z3.Z3_BV_SORT:
             return types.BVType(sort.size())
+        elif sort.kind() == z3.Z3_UNINTERPRETED_SORT:
+            return types.Type(str(sort))
         else:
             raise NotImplementedError("Unsupported sort in conversion: %s" % sort)
 
@@ -907,10 +910,12 @@ class Z3Converter(Converter, DagWalker):
             return self.z3ArraySort(key_sort, val_sort)
         elif tp.is_bv_type():
             return self.z3BitVecSort(tp.width)
-        else:
-            assert tp.is_custom_type(), "Unsupported type '%s'" % tp
+        elif tp.is_custom_type():
             return self.z3Sort(tp)
-        raise NotImplementedError("Unsupported type in conversion: %s" % tp)
+        elif tp.is_datatype():
+            return self.z3DataType(tp)
+        else:
+            raise NotImplementedError("Unsupported type in conversion: %s" % tp)
 
     def __del__(self):
         # Cleaning-up Z3Converter requires dec-ref'ing the terms in the cache

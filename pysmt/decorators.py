@@ -81,19 +81,14 @@ def catch_conversion_error(f):
     @wraps(f)
     def catch_conversion_error_wrap(*args, **kwargs):
         try:
-            print("panda catch 1")
             res = f(*args, **kwargs)
-            print("panda catch 3")
         except pysmt.exceptions.UnsupportedOperatorError as ex:
-            print("panda catch 4")
             raise pysmt.exceptions.ConvertExpressionError(message=
                 "Could not convert the input expression. " +
                 "The formula contains unsupported operators. " +
                 "The error was: %s" % ex.message,
             expression=ex.expression)
-        print("panda catch 5")
         return res
-    print("panda catch 6")
     return catch_conversion_error_wrap
 
 
