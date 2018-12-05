@@ -123,13 +123,11 @@ class SmtLibSolver(Solver):
     def _send_command(self, cmd):
         """Sends a command to the STDIN pipe."""
         self._debug("Sending: %s", cmd.serialize_to_string())
-        print("panda", "Sending: %s", cmd.serialize_to_string())
         cmd.serialize(self.solver_stdin, daggify=True)
         self.solver_stdin.write("\n")
         try:
             self.solver_stdin.flush()
         except:
-            print("panda flush")
             pass
 
     def _send_silent_command(self, cmd):
@@ -180,7 +178,6 @@ class SmtLibSolver(Solver):
         """Reads a line from STDOUT pipe"""
         res = self.solver_stdout.readline().strip()
         self._debug("Read: %s", res)
-        print("panda Read: %s", res)
         return res
 
     def _get_value_answer(self):
