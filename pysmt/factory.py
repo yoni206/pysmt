@@ -87,7 +87,7 @@ class Factory(object):
         self._get_available_interpolators()
         
         #add cmd-line version of solvers that will be used in hermes.
-        self._add_generic_solvers()
+        #self._add_generic_solvers()
 
     
     def _add_generic_solvers(self):
